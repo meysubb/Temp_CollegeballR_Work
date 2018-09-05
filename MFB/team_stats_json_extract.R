@@ -26,8 +26,21 @@ extract_team_stats <- function(df){
   stat_df <- rbind(main_stat,add_df)
 }
 
-team_stats <- function(team_names,team_lst){
-  l_teams <- team_lst$teams$stats
+### what do for season data?
+### this extracts data per game
+### Use .extract_base_schedule to get all season data
+### Loop over the season url's for this to work
+team_stats <- function(url){
+  require(jsonlite)
+  post_string_options <- "/teamStats.json"
+  full_url <- paste0(url,post_string_options)
+
+  if(team_stats)
+  team_json <- fromJSON(full_url)
+  team_info  <- team_json$meta$teams
+  team_names <- team_info %>% pull(shortname)
+
+  l_teams <- team_json$teams$stats
   len <- length(l_teams)
   stat_df <- data.frame()
   for(i in 1:len){
@@ -37,3 +50,14 @@ team_stats <- function(team_names,team_lst){
   }
   return(stat_df)
 }
+
+#### Extracting Season's worth of urls
+
+df <- .extract_base_schedule(team_id,year,sport)
+year_id <- .year_ref(year,sport)
+base_url <- paste0("http://stats.ncaa.org/player/game_by_game?game_sport_year_ctl_id=",year_id,"&org_id=",team_id,"&stats_player_seq=-100")
+href <- read_html(base_url) %>%
+  html_nodes(".smtext .skipMask") %>%
+  html_attr("href")
+actual_len = length(href)/2
+### Need to do somethign here to remove the #boxscore
