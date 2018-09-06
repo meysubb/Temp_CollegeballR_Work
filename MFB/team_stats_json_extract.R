@@ -35,7 +35,8 @@ team_stats <- function(url){
   post_string_options <- "/teamStats.json"
   full_url <- paste0(url,post_string_options)
 
-  if(team_stats)
+  ### need assert statement to basically skip everything and return NULL
+  ### if the JSON hits a 404 error
   team_json <- fromJSON(full_url)
   team_info  <- team_json$meta$teams
   team_names <- team_info %>% pull(shortname)
@@ -52,12 +53,30 @@ team_stats <- function(url){
 }
 
 #### Extracting Season's worth of urls
-
+team_id <- 697
+year <- 2018
+sport <- "MFB"
 df <- .extract_base_schedule(team_id,year,sport)
 year_id <- .year_ref(year,sport)
 base_url <- paste0("http://stats.ncaa.org/player/game_by_game?game_sport_year_ctl_id=",year_id,"&org_id=",team_id,"&stats_player_seq=-100")
 href <- read_html(base_url) %>%
   html_nodes(".smtext .skipMask") %>%
   html_attr("href")
-actual_len = length(href)/2
-### Need to do somethign here to remove the #boxscore
+### remove hashtags
+clean_href <- gsub("\\#.*","",href)
+clean_href <- clean_href[clean_href != ""]
+actual_len = length(clean_href)
+if(actual_len == nrow(df)){
+  ### extract the following text
+  pre_string <- "http://data.ncaa.com/sites/default/files/data/game/football/fbs/"
+  extract_href <- gsub(".*fbs/","",clean_href)
+  df$href <- paste0(pre_string,extract_href)
+}
+
+### Store Team Name
+teams <- team_mapping(2018,sport)
+t_name <- teams$team_name[which(team_id == teams$team_id)]
+### Extract data per game
+data_df <- df %>% mutate(
+  t_stats = purrr::map(href,team_stats)
+)
