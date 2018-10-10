@@ -10,7 +10,8 @@ library(assertthat)
 pbp_data <- function(year,
                      week = 1,
                      team = NULL,
-                     play_type = NULL) {
+                     play_type = NULL,
+                     drive=NULL) {
   require(jsonlite)
   options(stringsAsFactors = FALSE)
   if (!is.null(play_type)) {
@@ -27,13 +28,19 @@ pbp_data <- function(year,
   }
   ## Inputs
   ## Year, Week, Team
-  play_base_url <- "https://api.collegefootballdata.com/plays?"
-  if (!is.null(play_type) & !is.null(team)) {
+  if(is.null(drive)){
+    play_base_url <- "https://api.collegefootballdata.com/plays?"
+  }
+  else{
+    play_base_url <- "https://api.collegefootballdata.com/drives?"
+  }
+
+  if (is.null(play_type) & is.null(team)) {
     # no play type, no team
     full_url <- paste0(play_base_url, "year=", year, "&week=", week)
   } else{
     # no team, play_type
-    if (!is.null(play_type)) {
+    if (is.null(play_type)) {
       full_url <-
         paste0(play_base_url,
                "year=",
@@ -42,7 +49,7 @@ pbp_data <- function(year,
                week,
                "&playType=",
                pt_id)
-    } else if (!is.null(team)) {
+    } else if (is.null(team)) {
       # no team, play_type
       full_url <-
         paste0(
@@ -70,12 +77,11 @@ pbp_data <- function(year,
         )
     }
   }
-  
+
   raw_play_df <- fromJSON(full_url)
   raw_play_df <- do.call(data.frame, raw_play_df)
   play_df <- raw_play_df
-  
+
   return(play_df)
 }
-
 

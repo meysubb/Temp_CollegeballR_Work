@@ -1,8 +1,12 @@
+library(assertthat)
 game_info <- function(year,
                       week = NULL,
                       team = NULL,
                       conference = NULL) {
   require(jsonlite)
+  ## check if year is numeric
+  assert_that(is.numeric(year),msg='Enter valid year')
+  assert_that(is.numeric(week),msg='Enter valid week')
   options(stringsAsFactors = FALSE)
   play_base_url <-
     paste0("https://api.collegefootballdata.com/games?year=",
