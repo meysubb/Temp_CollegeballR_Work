@@ -3,7 +3,7 @@ library(dplyr)
 ## Store this as a data object
 pt_url <- "https://api.collegefootballdata.com/play/types"
 play_types <- fromJSON(pt_url)
-play_type_df <- play_types %>% mutate(text = tolower(text))
+cfb_play_type_df <- play_types %>% mutate(text = tolower(text))
 
 library(assertthat)
 
@@ -12,18 +12,17 @@ pbp_data <- function(year,
                      team = NULL,
                      play_type = NULL,
                      drive=NULL) {
-  require(jsonlite)
   options(stringsAsFactors = FALSE)
   if (!is.null(play_type)) {
-    text <- play_type %in% play_type_df$text
-    abbr <- play_type %in% play_type_df$abbreviation
+    text <- play_type %in% cfb_play_type_df$text
+    abbr <- play_type %in% cfb_play_type_df$abbreviation
     pt <-
       assert_that((text |
                      abbr) == T, msg = "Incorrect play type selected, please look at the available options in the Play Type DF.")
     if (text) {
-      pt_id = play_type_df$id[which(play_type_df$text == play_type)]
+      pt_id = cfb_play_type_df$id[which(cfb_play_type_df$text == play_type)]
     } else{
-      pt_id = play_type_df$id[which(play_type_df$abbreviation == play_type)]
+      pt_id = cfb_play_type_df$id[which(cfb_play_type_df$abbreviation == play_type)]
     }
   }
   ## Inputs
