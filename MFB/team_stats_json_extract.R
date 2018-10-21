@@ -40,6 +40,7 @@
 
 
 ### final wrapper to get team stats
+### game by game stats
 .cfb_team_game <- function(team_id,year,sprt="MFB"){
   ### check sport code first
   sport <- sport_code(sprt)
@@ -90,7 +91,8 @@
   return(final_df)
 }
 
-.cfb_team_season <- function(team_id,year,sprt="MFB"){
+### Overal stats in a season
+cfb_team_season <- function(team_id,year,sprt="MFB"){
   base_url <- "http://stats.ncaa.org"
   year_id <- .year_ref(year,sprt)
   url <- paste0(base_url,"/team/",team_id,"/stats/",year_id)
@@ -104,12 +106,13 @@
   url_df <- head_df[head_df$headers %in% search,]
   url_df <- url_df %>% mutate(
     full_url = paste0(base_url,header_href),
-    stat_df = purrr::map(full_url,scrape_overall_stats)
+    stat_df = purrr::map(full_url,.scrape_overall_stats)
   )
 
   test <- url_df %>% select(stat_df) %>% tidyr::unnest()
   test[,-2] <- lapply(test[,-2], function(x) as.numeric(gsub(",", "", x)))
   ## "Opponent firt
+  test$Player <- as.factor(test$Player)
   levels(test$Player) <- c(1,2)
   test$Player <- as.numeric(test$Player)
   s <- aggregate(x=test, by=list(test$Player), sum, na.rm = TRUE)
@@ -120,32 +123,12 @@
   return(s)
 }
 
-## Grab totals and opp totals from
-## Total Offense
-## Tackles
-## Kicking
-## Punting
-## Returns - Punt and Kick
-## Defense
-## Redzone
-## Scoring
 
-## get headers .heading td > a
 
-# url <- "http://stats.ncaa.org/team/8/stats/12623"
-# headers <- read_html(url) %>% html_nodes(".heading td > a") %>% html_text()
-# header_href <- read_html(url) %>% html_nodes(".heading td > a") %>% html_attr("href")
-# head_df <- data.frame(headers,header_href)
-
-## information we want
-# search <- c("Total Offense","Tackles","Kicking",
-#             "Punting","Punt Returns","Kickoffs and KO Returns",
-#             "Defense","Redzone","Scoring")
-#
 # url_df <- head_df[head_df$headers %in% search,]
 
 ### grab the header and the ovearl stats (team and opponnet)
-scrape_overall_stats <- function(t_url){
+.scrape_overall_stats <- function(t_url){
   stat_head <- read_html(t_url) %>% html_nodes("th") %>% html_text()
   len <- length(stat_head)
   stat_value <- read_html(t_url) %>% html_nodes(".grey_heading td") %>% html_text()
@@ -155,18 +138,3 @@ scrape_overall_stats <- function(t_url){
   return(stat_df)
 }
 
-# url_df <- url_df %>% mutate(
-#   full_url = paste0(base_url,header_href),
-#   stat_df = purrr::map(full_url,scrape_overall_stats)
-# )
-#
-# test <- url_df %>% select(stat_df) %>% tidyr::unnest()
-# test[,-2] <- lapply(test[,-2], function(x) as.numeric(gsub(",", "", x)))
-# ## "Opponent firt
-# levels(test$Player) <- c(1,2)
-# test$Player <- as.numeric(test$Player)
-# s <- aggregate(x=test, by=list(test$Player), sum, na.rm = TRUE)
-# s$Player <- NULL
-# s[s$Group.1!=1,"Group.1"] <- "Team"
-# s[s$Group.1==1,"Group.1"] <- "Opponent"
-# ### return S and should be good

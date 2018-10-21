@@ -1,9 +1,7 @@
-library(assertthat)
 game_info <- function(year,
                       week = NULL,
                       team = NULL,
                       conference = NULL) {
-  require(jsonlite)
   ## check if year is numeric
   assert_that(is.numeric(year),msg='Enter valid year')
   assert_that(is.numeric(week),msg='Enter valid week')
