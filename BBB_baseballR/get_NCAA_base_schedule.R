@@ -1,6 +1,7 @@
 library(tidyverse)
 library(rvest)
 library(snakecase)
+library(assertthat)
 
 stripwhite <- function(x) gsub("\\s*$", "", gsub("^\\s*", "", x))
 
