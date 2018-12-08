@@ -5,9 +5,6 @@ library(assertthat)
 
 stripwhite <- function(x) gsub("\\s*$", "", gsub("^\\s*", "", x))
 
-# base url
-base_url <- "http://stats.ncaa.org"
-
 get_game_id=function(x){
   # Get results
   game_id <- as.numeric(gsub("^.*game/index/([0-9]*).*$", "\\1", x))
@@ -28,6 +25,8 @@ get_team_schedule <- function(teamid, year, division=1,verbose=F){
   yearid = ncaa_season_id_lu[ncaa_season_id_lu$season == year,"id"] %>% pull()
   team_url <- paste(base_url, "/team/index/", yearid, "?org_id=", teamid, sep="")
   
+  ## sleep for 1 second
+  Sys.sleep(1)
   team_read <- try(team_url %>% read_html())
   if (class(team_read)=='try-error'){
     print(paste('Cannot connect to server for', team, 'in', year))

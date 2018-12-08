@@ -5,9 +5,6 @@ library(RCurl)
 
 stripwhite <- function(x) gsub("\\s*$", "", gsub("^\\s*", "", x))
 
-base_url='http://stats.ncaa.org/game/play_by_play/'
-
-
 score_fill=function(score_in){
   m=length(score_in)
   score_in[1]=0
@@ -22,10 +19,9 @@ score_fill=function(score_in){
 clean_games = function(game_id,year){
   base_url='http://stats.ncaa.org/game/play_by_play/'
   x= paste(base_url, game_id, sep='/')
-  x= paste(base_url, game_id, sep='/')
-  y=getURL(x)
+  Sys.sleep(1)
+  y=readHTMLTable(getURL(x))
   # Play by play is in table form
-  y=readHTMLTable(y)
   y = y[which(!sapply(y,is.null))]
   
   if (length(y) == 0 | length(y) < ncol(y[[3]])) {
